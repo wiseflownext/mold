@@ -22,6 +22,7 @@ import { ref, reactive } from 'vue'
 import type { FormInstance } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { login } from '@/api/auth'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -38,9 +39,9 @@ async function handleLogin() {
   await formRef.value?.validate()
   loading.value = true
   try {
-    // TODO: 对接登录API
-    userStore.setToken('mock-token')
-    userStore.setUserInfo({ id: 1, username: form.username, name: '管理员', role: '管理员', roleCode: 'admin' })
+    const res: any = await login(form)
+    userStore.setToken(res.token)
+    userStore.setUserInfo(res.user)
     router.push('/')
   } finally {
     loading.value = false
