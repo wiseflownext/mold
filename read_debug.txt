@@ -1,0 +1,17 @@
+﻿python : Found dir: E:\APP\mold\模具编号体系
+所在位置 C:\Users\Mayn\AppData\Local\Temp\ps-script-6ada9914-9459-441d-9b77-bebd603228a2.ps1:97 字符: 1
++ python deploy/read_mold_data.py 2>&1 | Out-File -FilePath e:\APP\mold ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Found dir: E:\APP\mold\模具编号体系:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Files: ['妯″帇妯″叿.json', '鍙ｅ瀷妯″叿.json', '鎺ヨ\ue757妯″叿.json']
+妯″帇妯″叿.json: 8439 bytes, first 3: 5b0a20
+  Decoded with utf-8-sig: 25 records
+鍙ｅ瀷妯″叿.json: 20151 bytes, first 3: 5b0a20
+  Decoded with utf-8-sig: 51 records
+鎺ヨ\ue757妯″叿.json: 50314 bytes, first 3: 5b0a20
+  Decoded with utf-8-sig: 136 records
+
+Total types: ['其他']
+Output: E:\APP\mold\mold_data_all.json

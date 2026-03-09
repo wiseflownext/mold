@@ -1,0 +1,21 @@
+模压: 25 records (8439 bytes)
+口型: 51 records (20151 bytes)
+接角: 136 records (50314 bytes)
+Total: 212
+First record: {
+  "id": "模压1",
+  "moldNo": "5700-JL153-18",
+  "firstUseDate": null,
+  "unit": null,
+  "cycle": null,
+  "history": null,
+  "products": [
+    {
+      "customer": "吉利四川商用车有限公司",
+      "model": null,
+      "name": "前面罩缓冲块",
+      "partNo": "53DN2522-02016"
+    }
+  ],
+  "_type": "模压"
+}
