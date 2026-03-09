@@ -1,0 +1,386 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ========== 系统管理 ==========
+
+model User {
+  id          Int       @id @default(autoincrement())
+  username    String    @unique @db.VarChar(50)
+  password    String    @db.VarChar(255)
+  name        String    @db.VarChar(50)
+  roleId      Int       @map("role_id")
+  workshopId  Int?      @map("workshop_id")
+  phone       String?   @db.VarChar(20)
+  status      Int       @default(1) // 1启用 0禁用
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  role              Role               @relation(fields: [roleId], references: [id])
+  usageRecords      UsageRecord[]
+  borrowRecords     BorrowRecord[]
+  maintenanceRecords MaintenanceRecord[]
+  repairOrders      RepairOrder[]      @relation("reporter")
+  handledRepairs    RepairOrder[]      @relation("handler")
+  inspections       Inspection[]
+  photos            Photo[]
+  statusChanges     StatusChange[]
+  operationLogs     OperationLog[]
+
+  @@map("users")
+}
+
+model Role {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique @db.VarChar(50)
+  code        String    @unique @db.VarChar(50) // admin / worker / manager
+  appMode     String    @default("worker") @map("app_mode") @db.VarChar(20) // worker / manager
+  isPreset    Boolean   @default(false) @map("is_preset")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  users       User[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model RolePermission {
+  id          Int    @id @default(autoincrement())
+  roleId      Int    @map("role_id")
+  menuKey     String @map("menu_key") @db.VarChar(100)
+  actions     String @db.VarChar(255) // view,create,edit,delete,export 逗号分隔
+
+  role        Role   @relation(fields: [roleId], references: [id])
+
+  @@unique([roleId, menuKey])
+  @@map("role_permissions")
+}
+
+model DictType {
+  id       Int        @id @default(autoincrement())
+  name     String     @db.VarChar(50) // 模具类型 / 车间 / 寿命单位
+  code     String     @unique @db.VarChar(50)
+  items    DictItem[]
+
+  @@map("dict_types")
+}
+
+model DictItem {
+  id         Int     @id @default(autoincrement())
+  typeId     Int     @map("type_id")
+  label      String  @db.VarChar(100)
+  value      String  @db.VarChar(100)
+  sort       Int     @default(0)
+  status     Int     @default(1)
+
+  dictType   DictType @relation(fields: [typeId], references: [id])
+
+  @@map("dict_items")
+}
+
+model OperationLog {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  action      String   @db.VarChar(50) // create / update / delete / status_change
+  module      String   @db.VarChar(50) // mold / acceptance / inspection ...
+  targetId    Int?     @map("target_id")
+  detail      String?  @db.Text
+  ip          String?  @db.VarChar(50)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([module, targetId])
+  @@map("operation_logs")
+}
+
+// ========== 客户与产品 ==========
+
+model Customer {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique @db.VarChar(100)
+  code        String?   @unique @db.VarChar(50)
+  contact     String?   @db.VarChar(50)
+  phone       String?   @db.VarChar(20)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  products    Product[]
+
+  @@map("customers")
+}
+
+model Product {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(100)
+  partNo      String?   @map("part_no") @db.VarChar(100)
+  model       String?   @db.VarChar(100) // 车型
+  customerId  Int       @map("customer_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  customer    Customer  @relation(fields: [customerId], references: [id])
+  moldProducts MoldProduct[]
+  usageRecords UsageRecord[]
+
+  @@map("products")
+}
+
+// ========== 模具核心 ==========
+
+model Mold {
+  id              Int       @id @default(autoincrement())
+  moldNo          String    @unique @map("mold_no") @db.VarChar(100)
+  type            String    @db.VarChar(20) // 模压 / 口型 / 接角
+  status          String    @default("在库") @db.VarChar(20)
+  location        String    @default("仓库") @db.VarChar(50)
+  designLife      Decimal?  @map("design_life") @db.Decimal(12, 2)
+  lifeUnit        String    @default("米") @map("life_unit") @db.VarChar(20)
+  totalUsage      Decimal   @default(0) @map("total_usage") @db.Decimal(12, 2)
+  maintenanceCycle Int?     @map("maintenance_cycle") // 天
+  inspectionCycle  Int?     @map("inspection_cycle") // 天
+  nextMaintenanceDate DateTime? @map("next_maintenance_date")
+  nextInspectionDate  DateTime? @map("next_inspection_date")
+  firstUseDate    DateTime? @map("first_use_date")
+  isDeleted       Boolean   @default(false) @map("is_deleted")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  moldProducts    MoldProduct[]
+  acceptance      Acceptance?
+  usageRecords    UsageRecord[]
+  borrowRecords   BorrowRecord[]
+  maintenanceRecords MaintenanceRecord[]
+  repairOrders    RepairOrder[]
+  inspections     Inspection[]
+  alerts          Alert[]
+  photos          Photo[]
+  statusChanges   StatusChange[]
+
+  @@index([type])
+  @@index([status])
+  @@index([isDeleted])
+  @@map("molds")
+}
+
+model MoldProduct {
+  id        Int     @id @default(autoincrement())
+  moldId    Int     @map("mold_id")
+  productId Int     @map("product_id")
+
+  mold      Mold    @relation(fields: [moldId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@unique([moldId, productId])
+  @@map("mold_products")
+}
+
+// ========== 验收 ==========
+
+model Acceptance {
+  id            Int       @id @default(autoincrement())
+  moldId        Int       @unique @map("mold_id")
+  moldNo        String    @map("mold_no") @db.VarChar(100)
+  moldType      String    @map("mold_type") @db.VarChar(20)
+  result        String    @db.VarChar(20) // 通过 / 不通过
+  designLife    Decimal?  @map("design_life") @db.Decimal(12, 2)
+  reportFileId  Int?      @map("report_file_id")
+  remark        String?   @db.Text
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  mold          Mold      @relation(fields: [moldId], references: [id])
+  reportFile    FileRecord? @relation(fields: [reportFileId], references: [id])
+
+  @@map("acceptances")
+}
+
+// ========== 使用记录 ==========
+
+model UsageRecord {
+  id          Int       @id @default(autoincrement())
+  moldId      Int       @map("mold_id")
+  productId   Int?      @map("product_id")
+  amount      Decimal   @db.Decimal(12, 2)
+  useDate     DateTime  @map("use_date")
+  userId      Int       @map("user_id")
+  remark      String?   @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  mold        Mold      @relation(fields: [moldId], references: [id])
+  product     Product?  @relation(fields: [productId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@index([moldId, useDate])
+  @@map("usage_records")
+}
+
+// ========== 领用归还 ==========
+
+model BorrowRecord {
+  id          Int       @id @default(autoincrement())
+  moldId      Int       @map("mold_id")
+  type        String    @db.VarChar(10) // 领用 / 归还
+  userId      Int       @map("user_id")
+  workshop    String?   @db.VarChar(50)
+  machine     String?   @db.VarChar(50)
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  mold        Mold      @relation(fields: [moldId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@index([moldId])
+  @@map("borrow_records")
+}
+
+// ========== 保养 ==========
+
+model MaintenanceRecord {
+  id          Int       @id @default(autoincrement())
+  moldId      Int       @map("mold_id")
+  date        DateTime
+  content     String    @db.Text
+  userId      Int       @map("user_id")
+  remark      String?   @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  mold        Mold      @relation(fields: [moldId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@index([moldId])
+  @@map("maintenance_records")
+}
+
+// ========== 维修 ==========
+
+model RepairOrder {
+  id            Int       @id @default(autoincrement())
+  moldId        Int       @map("mold_id")
+  description   String    @db.Text
+  status        String    @default("待处理") @db.VarChar(20)
+  reporterId    Int       @map("reporter_id")
+  handlerId     Int?      @map("handler_id")
+  handleDesc    String?   @map("handle_desc") @db.Text
+  cost          Decimal?  @db.Decimal(10, 2)
+  completedAt   DateTime? @map("completed_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  mold          Mold      @relation(fields: [moldId], references: [id])
+  reporter      User      @relation("reporter", fields: [reporterId], references: [id])
+  handler       User?     @relation("handler", fields: [handlerId], references: [id])
+  photos        Photo[]
+
+  @@index([moldId])
+  @@index([status])
+  @@map("repair_orders")
+}
+
+// ========== 鉴定 ==========
+
+model Inspection {
+  id              Int       @id @default(autoincrement())
+  moldId          Int       @map("mold_id")
+  date            DateTime
+  result          String    @db.VarChar(20) // 合格 / 不合格 / 调整周期
+  newCycleValue   Decimal?  @map("new_cycle_value") @db.Decimal(12, 2)
+  nextDate        DateTime? @map("next_date")
+  inspector       String    @db.VarChar(100)
+  reportFileId    Int?      @map("report_file_id")
+  remark          String?   @db.Text
+  userId          Int       @map("user_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  mold            Mold      @relation(fields: [moldId], references: [id])
+  user            User      @relation(fields: [userId], references: [id])
+  reportFile      FileRecord? @relation(fields: [reportFileId], references: [id])
+
+  @@index([moldId])
+  @@map("inspections")
+}
+
+// ========== 告警 ==========
+
+model Alert {
+  id          Int       @id @default(autoincrement())
+  type        String    @db.VarChar(30) // life_warning / maintenance_due / usage_abnormal / inspection_due
+  moldId      Int       @map("mold_id")
+  message     String    @db.VarChar(255)
+  status      String    @default("未处理") @db.VarChar(20)
+  handlerId   Int?      @map("handler_id")
+  handledAt   DateTime? @map("handled_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  mold        Mold      @relation(fields: [moldId], references: [id])
+
+  @@index([type, status])
+  @@map("alerts")
+}
+
+model AlertRule {
+  id          Int     @id @default(autoincrement())
+  type        String  @unique @db.VarChar(30)
+  threshold   String  @db.VarChar(100) // JSON: {"percent": [80, 90]} 或 {"days": 7}
+  enabled     Boolean @default(true)
+
+  @@map("alert_rules")
+}
+
+// ========== 照片 ==========
+
+model Photo {
+  id            Int       @id @default(autoincrement())
+  moldId        Int       @map("mold_id")
+  repairOrderId Int?      @map("repair_order_id")
+  fileId        Int       @map("file_id")
+  remark        String?   @db.VarChar(255)
+  userId        Int       @map("user_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  mold          Mold        @relation(fields: [moldId], references: [id])
+  repairOrder   RepairOrder? @relation(fields: [repairOrderId], references: [id])
+  file          FileRecord  @relation(fields: [fileId], references: [id])
+  user          User        @relation(fields: [userId], references: [id])
+
+  @@index([moldId])
+  @@map("photos")
+}
+
+// ========== 状态变更记录 ==========
+
+model StatusChange {
+  id          Int       @id @default(autoincrement())
+  moldId      Int       @map("mold_id")
+  fromStatus  String    @map("from_status") @db.VarChar(20)
+  toStatus    String    @map("to_status") @db.VarChar(20)
+  reason      String?   @db.Text
+  userId      Int       @map("user_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  mold        Mold      @relation(fields: [moldId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@index([moldId])
+  @@map("status_changes")
+}
+
+// ========== 文件存储 ==========
+
+model FileRecord {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(255)
+  url         String    @db.VarChar(500) // OSS地址
+  size        Int?
+  mimeType    String?   @map("mime_type") @db.VarChar(100)
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  acceptances  Acceptance[]
+  inspections  Inspection[]
+  photos       Photo[]
+
+  @@map("file_records")
+}

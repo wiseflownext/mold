@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>模具管家</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--pri:#1677FF;--pri-d:#0958D9;--green:#52C41A;--blue:#1677FF;--orange:#FA8C16;--red:#F5222D;--gray:#8C8C8C;--yellow:#FAAD14;--purple:#722ED1;--dark:#434343;--t1:#1F1F1F;--t2:#434343;--t3:#8C8C8C;--line:#F0F0F0;--bg:#F5F5F5;--card:#FFF}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;background:#000;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.phone{width:375px;height:812px;background:var(--bg);position:relative;overflow:hidden;border-radius:40px;box-shadow:0 0 0 8px #222,0 0 60px rgba(0,0,0,.5)}
+.page{position:absolute;top:0;left:0;width:100%;height:100%;background:var(--bg);display:none;flex-direction:column;overflow:hidden}
+.page.active{display:flex}
+.ps{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}.ps::-webkit-scrollbar{display:none}
+.sb{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:12px;font-weight:600;color:var(--t1);background:#fff;flex-shrink:0}.sb .tm{font-size:15px;font-weight:600}
+.nb{height:44px;display:flex;align-items:center;padding:0 16px;background:#fff;border-bottom:1px solid var(--line);flex-shrink:0}.nb .bk{width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:var(--t1)}.nb .tt{flex:1;text-align:center;font-size:17px;font-weight:600}.nb .ph{width:32px}
+.tb{height:56px;background:#fff;display:flex;border-top:1px solid var(--line);flex-shrink:0}.ti{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative}.ti svg{width:24px;height:24px;margin-bottom:2px}.ti span{font-size:10px;color:var(--t3)}.ti.on svg{color:var(--pri)}.ti.on span{color:var(--pri);font-weight:500}.badge{position:absolute;top:4px;right:50%;margin-right:-16px;background:var(--red);color:#fff;font-size:10px;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.card{background:#fff;border-radius:12px;padding:16px;margin:0 16px 12px}
+.btn{height:48px;border-radius:8px;border:none;font-size:16px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;width:100%}.bp{background:var(--pri);color:#fff}.bp:active{background:var(--pri-d)}.br{background:var(--red);color:#fff}.bo{background:#fff;color:var(--pri);border:1px solid var(--pri)}.bor{background:#fff;color:var(--red);border:1px solid var(--red)}.bog{background:#fff;color:var(--t2);border:1px solid #D9D9D9}
+.inp{width:100%;height:44px;border:1px solid #D9D9D9;border-radius:8px;padding:0 12px;font-size:14px;outline:none;background:#fff}.inp:focus{border-color:var(--pri)}.inp::placeholder{color:#BFBFBF}
+.txa{width:100%;border:1px solid #D9D9D9;border-radius:8px;padding:12px;font-size:14px;outline:none;resize:none;min-height:80px;background:#fff}
+.fl{font-size:14px;color:var(--t1);font-weight:500;margin-bottom:8px;display:block}.fg{margin-bottom:16px}
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500}
+.pb{height:6px;border-radius:3px;background:#F0F0F0;overflow:hidden;flex:1}.pf{height:100%;border-radius:3px;transition:width .3s}
+.toast{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.75);color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:200;display:none}.toast.show{display:block;animation:fio 2s ease}@keyframes fio{0%{opacity:0}15%{opacity:1}85%{opacity:1}100%{opacity:0}}
+
+.login-logo{text-align:center;margin-top:100px}.login-logo h1{font-size:28px;color:var(--pri);font-weight:700}.login-logo p{font-size:14px;color:var(--t3);margin-top:8px}
+.login-form{padding:40px 32px 0}.login-form .inp{margin-bottom:16px;height:48px;font-size:16px}
+.role-sel{display:flex;gap:12px;margin:0 32px 24px}.role-opt{flex:1;padding:14px;border-radius:12px;border:2px solid #D9D9D9;text-align:center;cursor:pointer;background:#fff;transition:.2s}.role-opt.on{border-color:var(--pri);background:rgba(22,119,255,.05)}.role-opt h4{font-size:15px;margin-bottom:4px}.role-opt p{font-size:11px;color:var(--t3)}
+
+.hd{padding:16px;background:#fff}.hd .gr{display:flex;justify-content:space-between;align-items:center}.hd .gr h2{font-size:18px;color:var(--t1)}.rtag{padding:4px 10px;border-radius:12px;font-size:12px;background:rgba(22,119,255,.1);color:var(--pri)}
+.todo-card{margin:12px 16px;padding:14px 16px;border-radius:12px;background:linear-gradient(135deg,#FF4D4F,#FF7875);color:#fff;display:flex;justify-content:space-between;align-items:center;cursor:pointer}.todo-card h3{font-size:15px;font-weight:600}.todo-card .ar{font-size:18px;opacity:.8}
+.alert-banner{margin:0 16px 12px;padding:10px 14px;border-radius:8px;background:rgba(250,140,22,.1);display:flex;align-items:center;gap:8px;font-size:13px;color:var(--orange)}
+.qa{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px}.qb{background:#fff;border-radius:12px;height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border:none;gap:8px}.qb:active{background:#F5F5F5}.qb .ic{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center}.qb span{font-size:13px;color:var(--t2);font-weight:500}
+.sh{display:flex;justify-content:space-between;align-items:center;padding:16px 16px 8px}.sh h3{font-size:16px;font-weight:600}.sh a{font-size:13px;color:var(--pri);cursor:pointer;text-decoration:none}
+.rc{display:flex;gap:10px;padding:0 16px;overflow-x:auto}.rc::-webkit-scrollbar{display:none}.rci{min-width:180px;background:#fff;border-radius:10px;padding:12px;flex-shrink:0;cursor:pointer}.rci:active{background:#FAFAFA}.rci .rh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.rci .rn{font-size:13px;font-weight:600}.rci .rp{font-size:11px;color:var(--t3);margin-bottom:6px}.rci .rl{display:flex;align-items:center;gap:6px}.rci .rl span{font-size:10px;font-weight:600;min-width:30px;text-align:right}
+
+.fc{display:flex;gap:8px;padding:8px 16px;overflow-x:auto;background:#fff;border-bottom:1px solid var(--line)}.fc::-webkit-scrollbar{display:none}.fc button{padding:6px 12px;border-radius:16px;font-size:12px;background:#F5F5F5;color:var(--t2);white-space:nowrap;cursor:pointer;border:none;flex-shrink:0}.fc button.on{background:rgba(22,119,255,.1);color:var(--pri)}
+.mc{background:#fff;border-radius:12px;padding:14px 16px;margin:8px 16px;cursor:pointer}.mc:active{background:#FAFAFA}.mc .mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.mc .mn{font-size:15px;font-weight:600}.mc .mp{font-size:14px;color:var(--t2);margin-bottom:4px}.mc .cu{font-size:12px;color:var(--t3);margin-bottom:8px}.mc .lr{display:flex;align-items:center;gap:10px}.mc .lp{font-size:12px;font-weight:600;min-width:36px;text-align:right}.mc .extra{font-size:11px;color:var(--t3);margin-top:6px;display:flex;justify-content:space-between}
+
+.di{background:#fff;padding:20px 16px;display:flex;justify-content:space-between;align-items:flex-start}.di .dn{font-size:20px;font-weight:700}.di .dm{font-size:13px;color:var(--t3);margin-top:6px}
+.lrc{background:#fff;margin:12px 16px;border-radius:12px;padding:24px;display:flex;flex-direction:column;align-items:center}.rc2{position:relative;width:140px;height:140px}.rc2 canvas{width:140px;height:140px}.rt{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}.rt .pct{font-size:28px;font-weight:700}.rt .sub{font-size:11px;color:var(--t3);margin-top:2px}.extra-info{font-size:12px;color:var(--t3);margin-top:12px;text-align:center}
+.dt{display:flex;background:#fff;border-bottom:1px solid var(--line);padding:0 16px;overflow-x:auto}.dt::-webkit-scrollbar{display:none}.dti{padding:12px 14px;font-size:13px;color:var(--t3);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;flex-shrink:0}.dti.on{color:var(--pri);font-weight:500;border-bottom-color:var(--pri)}
+.tc{background:#fff;min-height:200px}
+.tli{display:flex;padding:12px 16px;border-bottom:1px solid var(--line)}.tld{width:8px;height:8px;border-radius:50%;background:var(--pri);margin-top:5px;margin-right:12px;flex-shrink:0}.tl-info{flex:1}.tl-info .d{font-size:12px;color:var(--t3)}.tl-info .desc{font-size:14px;color:var(--t2);margin-top:4px}
+.db{display:flex;gap:10px;padding:12px 16px;background:#fff;border-top:1px solid var(--line);flex-shrink:0}.db .btn{flex:1;height:44px;font-size:14px}
+.pi{padding:14px 16px;border-bottom:1px solid var(--line)}.pi .ct{font-size:14px;font-weight:500}.pi .nm{font-size:13px;color:var(--t2);margin-top:4px}.pi .pt{font-size:12px;color:var(--t3);margin-top:2px}
+
+.fp{padding:16px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}.chip{padding:6px 12px;border-radius:16px;background:#F5F5F5;font-size:12px;color:var(--pri);cursor:pointer;border:none}
+.iws{position:relative}.iws .inp{padding-right:40px}.iws .uf{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--t3)}
+.seg{display:flex;margin:0 16px;background:#F5F5F5;border-radius:8px;padding:2px}.sgi{flex:1;height:36px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:14px;color:var(--t3);cursor:pointer;border:none;background:transparent}.sgi.on{background:#fff;color:var(--pri);font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.pg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.ps2{aspect-ratio:1;border-radius:8px;border:1px dashed #D9D9D9;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:#FAFAFA}.ps2 svg{width:28px;height:28px;color:#BFBFBF}.ps2 span{font-size:11px;color:#BFBFBF;margin-top:4px}.ps2.fl2{border:none;background:#D9E8FF}
+
+.mh2{display:flex;justify-content:space-between;align-items:center;padding:0 16px;height:44px;background:#fff;border-bottom:1px solid var(--line)}.mh2 h2{font-size:17px;font-weight:600}.mh2 a{font-size:13px;color:var(--pri);cursor:pointer}
+.mi{display:flex;padding:14px 16px;background:#fff;border-bottom:1px solid var(--line);gap:12px;cursor:pointer}.mic{width:36px;height:36px;border-radius:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0}.mib{flex:1;min-width:0}.mib .mit{font-size:14px;font-weight:500}.mib .mix{font-size:12px;color:var(--t3);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mir{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}.mir .mt2{font-size:11px;color:var(--t3)}.ud{width:8px;height:8px;border-radius:50%;background:var(--red)}
+
+.pfc{background:#fff;padding:24px 16px;display:flex;align-items:center;gap:14px}.av{width:56px;height:56px;border-radius:28px;background:linear-gradient(135deg,#1677FF,#69B1FF);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:600}.pfi h3{font-size:18px;font-weight:600}.pfi .sub{font-size:13px;color:var(--t3);margin-top:4px}
+.ml{background:#fff;margin-top:12px}.mli{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--line);cursor:pointer}.mli:active{background:#FAFAFA}.mli .lb{font-size:15px}.mli .ri{display:flex;align-items:center;gap:8px;color:var(--t3);font-size:14px}
+.lo{margin:24px 16px;height:48px;border-radius:8px;border:none;background:#fff;color:var(--red);font-size:16px;font-weight:500;cursor:pointer;width:calc(100% - 32px)}
+
+/* Dashboard */
+.kpi{display:flex;gap:8px;padding:0 16px;overflow-x:auto}.kpi::-webkit-scrollbar{display:none}
+.kc{min-width:140px;padding:14px;background:#fff;border-radius:10px;flex-shrink:0}.kc .kl{font-size:11px;color:var(--t3)}.kc .kv{font-size:26px;font-weight:700;margin-top:4px}.kc .ks{font-size:11px;color:var(--t3);margin-top:2px}
+.warn-item{display:flex;align-items:center;padding:12px 16px;background:#fff;margin:0 16px 6px;border-radius:8px;gap:10px;cursor:pointer}.warn-item:active{background:#FAFAFA}.warn-item .wn{flex:1;min-width:0}.warn-item .wn .w1{font-size:13px;font-weight:600;color:var(--t1)}.warn-item .wn .w2{font-size:11px;color:var(--t3);margin-top:2px}.warn-item .wp{width:60px;display:flex;align-items:center;gap:4px}.warn-item .wp .pb{flex:1}.warn-item .wp span{font-size:11px;font-weight:600;min-width:30px;text-align:right}
+.maint-item{display:flex;align-items:center;padding:12px 16px;background:#fff;margin:0 16px 6px;border-radius:8px;justify-content:space-between;cursor:pointer}.maint-item .ml2{font-size:13px;font-weight:600}.maint-item .ml3{font-size:11px;color:var(--t3);margin-top:2px}
+.chart-card{background:#fff;border-radius:12px;margin:12px 16px;padding:16px}.chart-card h4{font-size:14px;font-weight:600;margin-bottom:12px}
+.pie-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}.pie-legend{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--t2)}.pie-dot{width:8px;height:8px;border-radius:50%}
+canvas.pie{display:block;margin:0 auto}
+.bar-chart{display:flex;align-items:flex-end;gap:16px;height:100px;padding:0 8px;justify-content:center}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:4px}.bar-col .bv{font-size:10px;color:var(--t3)}.bar-col .bb{width:28px;border-radius:4px 4px 0 0;background:var(--pri)}.bar-col .bl{font-size:10px;color:var(--t3)}
+
+.alert-stats{display:flex;gap:8px;padding:12px 16px;background:#fff}.as{flex:1;text-align:center;padding:10px 0}.as .an{font-size:22px;font-weight:700}.as .al{font-size:10px;color:var(--t3);margin-top:2px}
+.at{display:flex;background:#fff;padding:0 16px;border-bottom:1px solid var(--line)}.ati{padding:10px 16px;font-size:13px;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent}.ati.on{color:var(--pri);font-weight:500;border-bottom-color:var(--pri)}
+.ali{display:flex;padding:14px 16px;background:#fff;border-bottom:1px solid var(--line);gap:10px;align-items:center;cursor:pointer}.ali .al-body{flex:1;min-width:0}.ali .al-body .a1{font-size:13px;font-weight:500}.ali .al-body .a2{font-size:12px;color:var(--t3);margin-top:3px}.ali .al-r{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}.ali .al-r .at2{font-size:11px;color:var(--t3)}
+</style>
+</head>
+<body>
+<div class="phone" id="app">
+<div class="toast" id="toast"></div>
+
+<!-- Login -->
+<div class="page active" id="login">
+<div class="sb"><span class="tm">9:41</span><span>5G</span></div>
+<div class="ps">
+<div class="login-logo">
+<div style="width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#1677FF,#69B1FF);margin:0 auto 16px;display:flex;align-items:center;justify-content:center"><svg width="32" height="32" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15h6"/></svg></div>
+<h1>模具管家</h1><p>工厂模具全生命周期管理</p>
+</div>
+<div style="padding:32px 32px 0">
+<div style="font-size:14px;color:var(--t1);font-weight:500;margin-bottom:12px">选择角色登录</div>
+<div class="role-sel">
+<div class="role-opt on" onclick="selRole(this,'worker')"><h4>操作工</h4><p>张三 · 挤出车间</p></div>
+<div class="role-opt" onclick="selRole(this,'admin')"><h4>管理员</h4><p>管理员 · 全权限</p></div>
+</div>
+</div>
+<div class="login-form" style="padding-top:0">
+<input class="inp" placeholder="请输入账号" value="zhangsan" style="height:48px;font-size:16px;margin-bottom:16px">
+<input class="inp" type="password" placeholder="请输入密码" value="123456" style="height:48px;font-size:16px;margin-bottom:16px">
+<button class="btn bp" onclick="doLogin()">登录</button>
+</div>
+</div>
+</div>
+
+<!-- Worker Home -->
+<div class="page" id="wHome">
+<div class="sb"><span class="tm">9:41</span><span>5G</span></div>
+<div class="ps">
+<div class="hd"><div class="gr"><h2>你好，张三</h2><span class="rtag">操作工</span></div></div>
+<div class="todo-card" onclick="switchWTab(2)"><h3>你有 2 个模具待归还</h3><span class="ar">&gt;</span></div>
+<div class="alert-banner"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>5700-SY118-59 寿命达90%，请注意</div>
+<div class="qa">
+<button class="qb" onclick="nav('recordUse')"><div class="ic" style="background:rgba(22,119,255,.1)"><svg width="20" height="20" fill="none" stroke="#1677FF" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><span>记录使用</span></button>
+<button class="qb" onclick="nav('borrow')"><div class="ic" style="background:rgba(82,196,26,.1)"><svg width="20" height="20" fill="none" stroke="#52C41A" stroke-width="2" viewBox="0 0 24 24"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg></div><span>领用归还</span></button>
+<button class="qb" onclick="nav('repair')"><div class="ic" style="background:rgba(245,34,45,.1)"><svg width="20" height="20" fill="none" stroke="#F5222D" stroke-width="2" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></div><span>报修提报</span></button>
+<button class="qb" onclick="nav('photo')"><div class="ic" style="background:rgba(250,140,22,.1)"><svg width="20" height="20" fill="none" stroke="#FA8C16" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div><span>拍照记录</span></button>
+</div>
+<div class="sh"><h3>最近使用</h3><a onclick="switchWTab(1)">更多 &gt;</a></div>
+<div class="rc" id="recentCards"></div>
+<div style="height:20px"></div>
+</div>
+<div class="tb" id="wTb"></div>
+</div>
+
+<!-- Worker Mold List -->
+<div class="page" id="wList">
+<div class="sb"><span class="tm">9:41</span><span>5G</span></div>
+<div style="padding:8px 16px;background:#fff"><input class="inp" placeholder="搜索模具编号/产品名/客户" style="border-radius:20px;background:#F5F5F5;border:none;padding-left:16px"></div>
+<div class="fc"><button class="fc on" onclick="fSel(this)">全部</button><button class="fc" onclick="fSel(this)">模压</button><button class="fc" onclick="fSel(this)">口型</button><button class="fc" onclick="fSel(this)">接角</button><button class="fc" onclick="fSel(this)">在库</button><button class="fc" onclick="fSel(this)">在用</button><button class="fc" onclick="fSel(this)">维修中</button></div>
+<div class="ps" id="wListScroll"></div>
+<div class="tb" id="wTb2"></div>
+</div>
+
+<!-- Worker Messages -->
+<div class="page" id="wMsg">
+<div class="sb"><span class="tm">9:41</span><span>5G</span></div>
+<div class="mh2"><h2>消息</h2><a onclick="showT('已全部标记已读')">全部已读</a></div>
+<div class="ps">
+<div class="mi"><div class="mic" style="background:rgba(22,119,255,.1)"><svg width="18" height="18" fill="none" stroke="#1677FF" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg></div><div class="mib"><div class="mit">工单更新</div><div class="mix">你提报的维修工单已处理完成</div></div><div class="mir"><span class="mt2">昨天</span></div></div>
+<div class="mi"><div class="mic" style="background:rgba(250,140,22,.1)"><svg width="18" height="18" fill="none" stroke="#FA8C16" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="mib"><div class="mit">归还提醒</div><div class="mix">模具5700-JL153-18已领用超3天</div></div><div class="mir"><span class="mt2">2小时前</span><div class="ud"></div></div></div>
+<div class="mi"><div class="mic" style="background:rgba(250,140,22,.1)"><svg width="18" height="18" fill="none" stroke="#FA8C16" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="mib"><div class="mit">保养提醒</div><div class="mix">你使用的5705-SQ123-8即将保养</div></div><div class="mir"><span class="mt2">今天</span><div class="ud"></div></div></div>
+</div>
+<div class="tb" id="wTb3"></div>
+</div>
+
+<!-- Worker Profile -->
+<div class="page" id="wProfile">
+<div class="sb"><span class="tm">9:41</span><span>5G</span></div>
+<div class="ps">
+<div class="pfc"><div class="av">张</div><div class="pfi"><h3>张三 <span class="tag" style="background:rgba(22,119,255,.1);color:var(--pri);font-size:11px;margin-left:6px">操作工</span></h3><div class="sub">挤出车间</div></div></div>
+<div class="ml"><div class="mli"><span class="lb">我的领用</span><div class="ri"><span style="background:var(--red);color:#fff;font-size:11px;padding:1px 6px;border-radius:8px">3</span><span>&gt;</span></div></div><div class="mli"><span class="lb">修改密码</span><div class="ri"><span>&gt;</span></div></div><div class="mli"><span class="lb">关于</span><div class="ri"><span style="color:var(--t3)">v1.0.0</span><span>&gt;</span></div></div></div>
+<button class="lo" onclick="nav('login')">退出登录</button>
+</div>
+<div class="tb" id="wTb4"></div>
+</div>
+
+<!-- Admin Dashboard -->
+<div class="page" id="aHome">
+<div class="sb"><span class="tm">9:41</span><span>5G</span></div>
+<div class="ps">
+<div class="hd"><div class="gr"><h2>数据看板</h2><span class="rtag">管理员</span></div></div>
+<div class="todo-card" style="background:linear-gradient(135deg,#F5222D,#FF7875)" onclick="switchATab(2)"><h3>当前 8 条告警待处理</h3><span class="ar">&gt;</span></div>
+<div class="kpi">
+<div class="kc"><div class="kl">模具总数</div><div class="kv" style="color:var(--pri)">96</div></div>
+<div class="kc"><div class="kl">在用率</div><div class="kv" style="color:var(--green)">24%</div><div class="ks">23/96</div></div>
+<div class="kc"><div class="kl">本月维修</div><div class="kv" style="color:var(--red)">5次</div></div>
+<div class="kc"><div class="kl">保养完成率</div><div class="kv" style="color:var(--orange)">73%</div><div class="ks">11/15</div></div>
+</div>
+<div class="sh"><h3>寿命预警</h3><span style="background:var(--red);color:#fff;font-size:11px;padding:1px 6px;border-radius:8px;margin-left:6px">3</span></div>
+<div class="warn-item" onclick="openDetail(4)"><div class="wn"><div class="w1">5700-RY121-49</div><div class="w2">雨刮臂托板橡胶护套 · 常州瑞悦</div></div><div class="wp"><div class="pb"><div class="pf" style="width:95%;background:#F5222D"></div></div><span style="color:#F5222D">95%</span></div></div>
+<div class="warn-item" onclick="openDetail(2)"><div class="wn"><div class="w1">5700-SY118-59</div><div class="w2">过线圈I · 三一重工</div></div><div class="wp"><div class="pb"><div class="pf" style="width:88%;background:#FA8C16"></div></div><span style="color:#FA8C16">88%</span></div></div>
+<div class="warn-item" onclick="openDetail(3)"><div class="wn"><div class="w1">5705-JL153-1</div><div class="w2">左前车门密封条 · 吉利商用车</div></div><div class="wp"><div class="pb"><div class="pf" style="width:88%;background:#FA8C16"></div></div><span style="color:#FA8C16">88%</span></div></div>
+<div class="sh"><h3>保养到期</h3></div>
+<div class="maint-item"><div><div class="ml2">5705-JL153-1</div><div class="ml3">左前车门密封条 · 挤出车间</div></div><span class="tag" style="background:rgba(245,34,45,.1);color:var(--red)">逾期3天</span></div>
+<div class="maint-item"><div><div class="ml2">5705-SQ123-8</div><div class="ml3">左右前车门侧密封条 · 挤出车间</div></div><span class="tag" style="background:rgba(250,140,22,.1);color:var(--orange)">明天到期</span></div>
+<div class="maint-item"><div><div class="ml2">5700-JL153-18</div><div class="ml3">前面罩缓冲块 · 模压车间</div></div><span class="tag" style="background:rgba(82,196,26,.1);color:var(--green)">23天后</span></div>
+<div class="chart-card">
+<h4>客户模具分布</h4>
+<canvas class="pie" id="pieChart" width="320" height="160"></canvas>
+<div class="pie-row"><div class="pie-legend"><div class="pie-dot" style="background:#1677FF"></div>吉利 38</div><div class="pie-legend"><div class="pie-dot" style="background:#52C41A"></div>五菱 28</div><div class="pie-legend"><div class="pie-dot" style="background:#FA8C16"></div>瑞悦 13</div><div class="pie-legend"><div class="pie-dot" style="background:#F5222D"></div>三一 12</div><div class="pie-legend"><div class="pie-dot" style="background:#8C8C8C"></div>其他 5</div></div>
+</div>
+<div class="chart-card">
+<h4>维修趋势（近6月）</h4>
+<div class="bar-chart"><div class="bar-col"><div class="bv">3</div><div class="bb" style="height:30px"></div><div class="bl">10月</div></div><div class="bar-col"><div class="bv">5</div><div class="bb" style="height:50px"></div><div class="bl">11月</div></div><div class="bar-col"><div class="bv">2</div><div class="bb" style="height:20px"></div><div class="bl">12月</div></div><div class="bar-col"><div class="bv">4</div><div class="bb" style="height:40px"></div><div class="bl">1月</div></div><div class="bar-col"><div class="bv">5</div><div class="bb" style="height:50px"></div><div class="bl">2月</div></div><div class="bar-col"><div class="bv">4</div><div class="bb" style="height:40px"></div><div class="bl">3月</div></div></div>
+</div>
+<div style="height:20px"></div>
+</div>
+<div class="tb" id="aTb"></div>
+</div>
+
+<!-- Admin Mold List -->
+<div class="page" id="aList">
+<div class="sb"><span class="tm">9:41</span><span>5G</span></div>
+<div style="padding:8px 16px;background:#fff;display:flex;gap:8px"><input class="inp" placeholder="搜索模具编号/产品名/客户" style="border-radius:20px;background:#F5F5F5;border:none;padding-left:16px;flex:1"><button style="background:none;border:none;color:var(--pri);font-size:12px;cursor:pointer;white-space:nowrap">排序</button></div>
+<div class="fc"><button class="fc on" onclick="fSel(this)">全部</button><button class="fc" onclick="fSel(this)">模压</button><button class="fc" onclick="fSel(this)">口型</button><button class="fc" onclick="fSel(this)">80-100%</button><button class="fc" onclick="fSel(this)">超期</button><button class="fc" onclick="fSel(this)">保养逾期</button></div>
+<div class="ps" id="aListScroll"></div>
+<div class="tb" id="aTb2"></div>
+</div>
+
+<!-- Admin Alerts -->
+<div class="page" id="aAlert">
+<div class="sb"><span class="tm">9:41</span><span>5G</span></div>
+<div class="mh2"><h2>告警中心</h2></div>
+<div class="alert-stats">
+<div class="as"><div class="an" style="color:var(--red)">3</div><div class="al">寿命预警</div></div>
+<div class="as"><div class="an" style="color:var(--orange)">2</div><div class="al">保养到期</div></div>
+<div class="as"><div class="an" style="color:var(--yellow)">1</div><div class="al">使用异常</div></div>
+<div class="as"><div class="an" style="color:var(--purple)">2</div><div class="al">鉴定到期</div></div>
+</div>
+<div class="at"><div class="ati" onclick="aSel(this)">全部</div><div class="ati on" onclick="aSel(this)">未处理</div><div class="ati" onclick="aSel(this)">已处理</div></div>
+<div class="ps">
+<div class="ali"><span class="tag" style="background:rgba(245,34,45,.1);color:var(--red)">寿命</span><div class="al-body"><div class="a1">5700-SY118-59</div><div class="a2">使用率达90%</div></div><div class="al-r"><span class="at2">1小时前</span><div class="ud"></div></div></div>
+<div class="ali"><span class="tag" style="background:rgba(250,140,22,.1);color:var(--orange)">保养</span><div class="al-body"><div class="a1">5705-JL153-1</div><div class="a2">保养逾期3天</div></div><div class="al-r"><span class="at2">3小时前</span><div class="ud"></div></div></div>
+<div class="ali"><span class="tag" style="background:rgba(250,173,20,.1);color:var(--yellow)">异常</span><div class="al-body"><div class="a1">5705-SQ123-9</div><div class="a2">单次使用量异常偏高</div></div><div class="al-r"><span class="at2">昨天</span><div class="ud"></div></div></div>
+<div class="ali"><span class="tag" style="background:rgba(245,34,45,.1);color:var(--red)">寿命</span><div class="al-body"><div class="a1">5700-RY121-49</div><div class="a2">使用率达95%</div></div><div class="al-r"><span class="at2">3天前</span><div class="ud"></div></div></div>
+<div class="ali"><span class="tag" style="background:rgba(114,46,209,.1);color:var(--purple)">鉴定</span><div class="al-body"><div class="a1">5705-SQ123-8</div><div class="a2">距鉴定到期还有15天</div></div><div class="al-r"><span class="at2">3天前</span><div class="ud"></div></div></div>
+<div class="ali"><span class="tag" style="background:rgba(114,46,209,.1);color:var(--purple)">鉴定</span><div class="al-body"><div class="a1">5700-JL153-20</div><div class="a2">距鉴定到期还有22天</div></div><div class="al-r"><span class="at2">5天前</span><div class="ud"></div></div></div>
+</div>
+<div class="tb" id="aTb3"></div>
+</div>
+
+<!-- Admin Profile -->
+<div class="page" id="aProfile">
+<div class="sb"><span class="tm">9:41</span><span>5G</span></div>
+<div class="ps">
+<div class="pfc"><div class="av">管</div><div class="pfi"><h3>管理员 <span class="tag" style="background:rgba(22,119,255,.1);color:var(--pri);font-size:11px;margin-left:6px">管理员</span></h3></div></div>
+<div class="ml"><div class="mli"><span class="lb">修改密码</span><div class="ri"><span>&gt;</span></div></div><div class="mli"><span class="lb">关于</span><div class="ri"><span style="color:var(--t3)">v1.0.0</span><span>&gt;</span></div></div></div>
+<button class="lo" onclick="nav('login')">退出登录</button>
+</div>
+<div class="tb" id="aTb4"></div>
+</div>
+
+<!-- Shared Detail -->
+<div class="page" id="detail">
+<div class="sb"><span class="tm">9:41</span><span>5G</span></div>
+<div class="nb"><div class="bk" onclick="goBack()">&lt;</div><div class="tt">模具详情</div><div class="ph"></div></div>
+<div class="ps">
+<div class="di"><div><div class="dn" id="dNo"></div><div class="dm" id="dMeta"></div></div><span class="tag" id="dTag"></span></div>
+<div class="lrc"><div class="rc2"><canvas id="rc" width="280" height="280"></canvas><div class="rt"><div class="pct" id="rP"></div><div class="sub" id="rS"></div></div></div><div class="extra-info" id="dExtra"></div></div>
+<div class="card" style="margin-top:0"><div style="font-size:15px;font-weight:600;margin-bottom:12px">关联产品</div><div id="dProd"></div></div>
+<div class="dt" id="dTabs"></div>
+<div class="tc" id="dTC"></div>
+</div>
+<div class="db" id="dBtns"></div>
+</div>
+
+<!-- Record Use -->
+<div class="page" id="recordUse">
+<div class="sb"><span class="tm">9:41</span><span>5G</span></div>
+<div class="nb"><div class="bk" onclick="goBack()">&lt;</div><div class="tt">记录使用</div><div class="ph"></div></div>
+<div class="ps"><div class="fp">
+<div class="fg"><label class="fl">选择模具</label><input class="inp" placeholder="点击搜索选择模具" readonly value="5700-JL153-18"><div style="margin-top:8px;font-size:12px;color:var(--t3)">最近使用</div><div class="chips"><button class="chip">5700-JL153-18</button><button class="chip">5705-SQ123-14</button><button class="chip">5700-SY118-59</button></div></div>
+<div class="fg"><label class="fl">本次生产米数</label><div class="iws"><input class="inp" type="number" placeholder="请输入米数" inputmode="numeric"><span class="uf">米</span></div></div>
+<div class="fg"><label class="fl">生产产品</label><select class="inp" style="color:var(--t2)"><option>前面罩缓冲块 (53DN2522-02016)</option></select></div>
+<div class="fg"><label class="fl">操作人</label><input class="inp" value="张三" readonly style="background:#FAFAFA;color:var(--t3)"></div>
+<div class="fg"><label class="fl">日期</label><input class="inp" type="date" value="2026-03-09"></div>
+<div class="fg"><label class="fl">备注</label><textarea class="txa" placeholder="选填，如有异常情况请说明"></textarea></div>
+</div></div>
+<div style="padding:12px 16px;background:#fff;border-top:1px solid var(--line);flex-shrink:0"><button class="btn bp" onclick="showT('提交成功');setTimeout(()=>goBack(),1500)">提交</button></div>
+</div>
+
+<!-- Borrow -->
+<div class="page" id="borrow">
+<div class="sb"><span class="tm">9:41</span><span>5G</span></div>
+<div class="nb"><div class="bk" onclick="goBack()">&lt;</div><div class="tt">模具领用</div><div class="ph"></div></div>
+<div class="ps"><div style="height:12px"></div>
+<div class="seg"><button class="sgi on" onclick="swSeg(this,0)">领用</button><button class="sgi" onclick="swSeg(this,1)">归还</button></div>
+<div class="fp" id="bF"><div class="fg"><label class="fl">选择模具</label><input class="inp" placeholder="搜索在库模具" readonly></div><div class="fg"><label class="fl">目标车间</label><select class="inp"><option value="">请选择车间</option><option>挤出车间</option><option>模压车间</option><option>接角车间</option></select></div><div class="fg"><label class="fl">机台（选填）</label><select class="inp"><option value="">请选择机台</option><option>1号机</option><option>2号机</option><option>3号机</option></select></div><button class="btn bp" onclick="showT('领用成功')">确认领用</button></div>
+<div class="fp" id="rF" style="display:none"><div class="fg"><label class="fl">选择模具</label><input class="inp" placeholder="搜索在用模具" readonly><div style="margin-top:8px;font-size:12px;color:var(--t3)">我领用的模具</div><div class="chips"><button class="chip">5700-JL153-18</button><button class="chip">5705-SQ123-14</button><button class="chip">5700-SY118-40</button></div></div><button class="btn bp" onclick="showT('归还成功')">确认归还</button></div>
+</div></div>
+
+<!-- Repair -->
+<div class="page" id="repair">
+<div class="sb"><span class="tm">9:41</span><span>5G</span></div>
+<div class="nb"><div class="bk" onclick="goBack()">&lt;</div><div class="tt">报修提报</div><div class="ph"></div></div>
+<div class="ps"><div class="fp">
+<div class="fg"><label class="fl">选择模具</label><input class="inp" placeholder="点击搜索选择模具" readonly></div>
+<div class="fg"><label class="fl">现场照片</label><div class="pg"><div class="ps2 fl2"><svg width="40" height="40" fill="none" stroke="#1677FF" stroke-width="1.5" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div><div class="ps2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg><span>添加照片</span></div></div><div style="font-size:11px;color:var(--t3);margin-top:8px">至少拍1张，最多9张</div></div>
+<div class="fg"><label class="fl">问题描述</label><textarea class="txa" placeholder="请描述模具问题"></textarea></div>
+</div></div>
+<div style="padding:12px 16px;background:#fff;border-top:1px solid var(--line);flex-shrink:0"><button class="btn br" onclick="showT('报修已提交');setTimeout(()=>goBack(),1500)">提交报修</button></div>
+</div>
+
+<!-- Photo -->
+<div class="page" id="photo">
+<div class="sb"><span class="tm">9:41</span><span>5G</span></div>
+<div class="nb"><div class="bk" onclick="goBack()">&lt;</div><div class="tt">拍照记录</div><div class="ph"></div></div>
+<div class="ps"><div class="fp">
+<div class="card" style="margin:0 0 16px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:15px;font-weight:600">5700-JL153-18</div><div style="font-size:12px;color:var(--t3);margin-top:4px">模压模具</div></div><span class="tag" style="background:rgba(22,119,255,.1);color:var(--blue)">在用</span></div>
+<div class="fg"><label class="fl">拍照</label><div class="pg"><div class="ps2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><span>拍照</span></div><div class="ps2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span>相册</span></div></div></div>
+<div class="fg"><label class="fl">备注</label><textarea class="txa" placeholder="选填"></textarea></div>
+</div></div>
+<div style="padding:12px 16px;background:#fff;border-top:1px solid var(--line);flex-shrink:0"><button class="btn bp" onclick="showT('上传成功');setTimeout(()=>goBack(),1500)">提交</button></div>
+</div>
+
+</div>
+<script>
+const M=[
+{no:"5700-JL153-18",type:"模压",st:"在用",sc:"blue",loc:"模压车间",prod:"前面罩缓冲块",cust:"吉利四川商用车",pn:"53DN2522-02016",lf:62.5,used:"12.5万米",tot:"20万米"},
+{no:"5705-SQ123-14",type:"口型",st:"在库",sc:"green",loc:"仓库",prod:"前舱盖前密封胶条",cust:"柳州五菱新能源",pn:"W0033095",lf:35,used:"10.5万米",tot:"30万米"},
+{no:"5700-SY118-59",type:"模压",st:"维修中",sc:"red",loc:"-",prod:"过线圈I",cust:"三一重工",pn:"JSS006931858",lf:88,used:"13.2万米",tot:"15万米"},
+{no:"5705-JL153-1",type:"口型",st:"保养中",sc:"orange",loc:"挤出车间",prod:"左前车门密封条总成",cust:"吉利四川商用车",pn:"9900074986/7",lf:88,used:"22万米",tot:"25万米"},
+{no:"5700-RY121-49",type:"模压",st:"封存",sc:"gray",loc:"仓库",prod:"雨刮臂托板橡胶护套",cust:"常州瑞悦车业",pn:"11205788",lf:95,used:"9.5万米",tot:"10万米"},
+{no:"5700-JL153-20",type:"模压",st:"在库",sc:"green",loc:"仓库",prod:"前面罩限位块",cust:"吉利四川商用车",pn:"53DN2522-02044",lf:45,used:"9万米",tot:"20万米"},
+{no:"5705-SQ123-8",type:"口型",st:"在用",sc:"blue",loc:"挤出车间",prod:"左右前车门侧密封条-A",cust:"柳州五菱新能源",pn:"W0003875/3877",lf:52,used:"15.6万米",tot:"30万米"},
+{no:"5700-SY118-40",type:"模压",st:"在用",sc:"blue",loc:"模压车间",prod:"座椅气管护套",cust:"三一重工",pn:"JSS005827839",lf:70,used:"14万米",tot:"20万米"},
+{no:"5705-SQ123-9",type:"口型",st:"待鉴定",sc:"yellow",loc:"仓库",prod:"四门车门侧密封条-A",cust:"柳州五菱新能源",pn:"-",lf:78,used:"23.4万米",tot:"30万米"},
+{no:"5700-JL153-19",type:"模压",st:"在库",sc:"green",loc:"仓库",prod:"工具箱密封罩",cust:"吉利四川商用车",pn:"51DN2522-08090",lf:20,used:"4万米",tot:"20万米"},
+];
+const CM={green:"#52C41A",blue:"#1677FF",orange:"#FA8C16",red:"#F5222D",gray:"#8C8C8C",yellow:"#FAAD14",purple:"#722ED1",dark:"#434343"};
+function lc(p){if(p>100)return"#F5222D";if(p>=90)return"#FA8C16";if(p>=80)return"#FAAD14";if(p>=50)return"#1677FF";return"#52C41A"}
+
+let role="worker",hist=[];
+function selRole(el,r){document.querySelectorAll('.role-opt').forEach(e=>e.classList.remove('on'));el.classList.add('on');role=r}
+function doLogin(){if(role==='worker'){nav('wHome');switchWTab(0)}else{nav('aHome');switchATab(0);setTimeout(drawPie,100)}}
+function nav(id){const c=document.querySelector('.page.active');if(c)hist.push(c.id);document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function goBack(){if(hist.length){const p=hist.pop();document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p).classList.add('active')}else{role==='worker'?switchWTab(0):switchATab(0)}}
+function openDetail(i){hist.push(document.querySelector('.page.active').id);document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('detail').classList.add('active');renderD(i)}
+function showT(m){const t=document.getElementById('toast');t.textContent=m;t.classList.remove('show');void t.offsetWidth;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)}
+function fSel(el){el.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));el.classList.add('on')}
+function aSel(el){document.querySelectorAll('.ati').forEach(b=>b.classList.remove('on'));el.classList.add('on')}
+
+const wTbH=`<div class="ti" data-t="0" onclick="switchWTab(0)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg><span>首页</span></div><div class="ti" data-t="1" onclick="switchWTab(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span>模具</span></div><div class="ti" data-t="2" onclick="switchWTab(2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><span>消息</span><div class="badge">2</div></div><div class="ti" data-t="3" onclick="switchWTab(3)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>我的</span></div>`;
+const aTbH=`<div class="ti" data-t="0" onclick="switchATab(0)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>看板</span></div><div class="ti" data-t="1" onclick="switchATab(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span>模具</span></div><div class="ti" data-t="2" onclick="switchATab(2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg><span>告警</span><div class="badge">5</div></div><div class="ti" data-t="3" onclick="switchATab(3)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>我的</span></div>`;
+["wTb","wTb2","wTb3","wTb4"].forEach(id=>document.getElementById(id).innerHTML=wTbH);
+["aTb","aTb2","aTb3","aTb4"].forEach(id=>document.getElementById(id).innerHTML=aTbH);
+
+const wPages=["wHome","wList","wMsg","wProfile"],aPages=["aHome","aList","aAlert","aProfile"];
+function switchWTab(i){wPages.forEach(p=>document.getElementById(p).classList.remove('active'));document.getElementById(wPages[i]).classList.add('active');document.querySelectorAll('#wTb .ti,#wTb2 .ti,#wTb3 .ti,#wTb4 .ti').forEach(t=>t.classList.toggle('on',parseInt(t.dataset.t)===i));hist=[]}
+function switchATab(i){aPages.forEach(p=>document.getElementById(p).classList.remove('active'));document.getElementById(aPages[i]).classList.add('active');document.querySelectorAll('#aTb .ti,#aTb2 .ti,#aTb3 .ti,#aTb4 .ti').forEach(t=>t.classList.toggle('on',parseInt(t.dataset.t)===i));hist=[]}
+
+function mkCard(m,i,admin){
+  let extra=admin?`<div class="extra"><span>保养: 2026-04-01</span><span>鉴定: 2026-12-01</span></div>`:'';
+  return`<div class="mc" onclick="openDetail(${i})"><div class="mh"><span class="mn">${m.no}</span><span class="tag" style="background:${CM[m.sc]}18;color:${CM[m.sc]}">${m.st}</span></div><div class="mp">${m.prod}</div><div class="cu">${m.cust}</div><div class="lr"><div class="pb"><div class="pf" style="width:${Math.min(m.lf,100)}%;background:${lc(m.lf)}"></div></div><span class="lp" style="color:${lc(m.lf)}">${m.lf}%</span></div>${extra}</div>`
+}
+document.getElementById('wListScroll').innerHTML=M.map((m,i)=>mkCard(m,i,false)).join('');
+document.getElementById('aListScroll').innerHTML=M.map((m,i)=>mkCard(m,i,true)).join('');
+document.getElementById('recentCards').innerHTML=[0,6,7].map(i=>{const m=M[i];return`<div class="rci" onclick="openDetail(${i})"><div class="rh"><span class="rn">${m.no}</span><span class="tag" style="background:${CM[m.sc]}18;color:${CM[m.sc]};font-size:10px">${m.st}</span></div><div class="rp">${m.prod}</div><div class="rl"><div class="pb"><div class="pf" style="width:${Math.min(m.lf,100)}%;background:${lc(m.lf)}"></div></div><span style="color:${lc(m.lf)}">${m.lf}%</span></div></div>`}).join('');
+
+function renderD(i){
+  const m=M[i];
+  document.getElementById('dNo').textContent=m.no;
+  document.getElementById('dMeta').innerHTML=`${m.type}模具 · ${m.loc}`;
+  const tg=document.getElementById('dTag');tg.textContent=m.st;tg.style.background=CM[m.sc]+'18';tg.style.color=CM[m.sc];
+  document.getElementById('rP').textContent=m.lf+'%';document.getElementById('rP').style.color=lc(m.lf);
+  document.getElementById('rS').textContent=m.used+' / '+m.tot;
+  const ex=document.getElementById('dExtra');
+  if(role==='admin')ex.innerHTML='日均消耗: 约850米 · 预计到期: 2026-09-15';else ex.innerHTML='';
+  drawRing(m.lf);
+  document.getElementById('dProd').innerHTML=`<div class="pi" style="border:none;padding:0"><div class="ct">${m.cust}</div><div class="nm">${m.prod}</div><div class="pt">零件号: ${m.pn}</div></div>`;
+  const tabs=role==='admin'?['使用记录','保养记录','维修记录','鉴定记录','照片']:['使用记录','保养记录','维修记录'];
+  document.getElementById('dTabs').innerHTML=tabs.map((t,j)=>`<div class="dti${j===0?' on':''}" onclick="swDT(this,${j})">${t}</div>`).join('');
+  swDT(null,0);
+  if(role==='worker')document.getElementById('dBtns').innerHTML=`<button class="btn bp" style="font-size:14px" onclick="nav('recordUse')">记录使用</button><button class="btn bor" style="font-size:14px" onclick="nav('repair')">报修</button><button class="btn bog" style="font-size:14px" onclick="nav('photo')">拍照</button>`;
+  else document.getElementById('dBtns').innerHTML='';
+}
+
+function drawRing(p){const cv=document.getElementById('rc'),ctx=cv.getContext('2d'),cx=140,cy=140,r=110,lw=16;ctx.clearRect(0,0,280,280);ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='#F0F0F0';ctx.lineWidth=lw;ctx.lineCap='round';ctx.stroke();const a=Math.min(p/100,1)*Math.PI*2;ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+a);ctx.strokeStyle=lc(p);ctx.lineWidth=lw;ctx.lineCap='round';ctx.stroke()}
+
+const TC=[
+`<div class="tli"><div class="tld"></div><div class="tl-info"><div class="d">2026-03-08</div><div class="desc">生产 1200米 | 前面罩缓冲块 | 张三</div></div></div><div class="tli"><div class="tld"></div><div class="tl-info"><div class="d">2026-03-05</div><div class="desc">生产 800米 | 前面罩缓冲块 | 李四</div></div></div><div class="tli"><div class="tld"></div><div class="tl-info"><div class="d">2026-03-01</div><div class="desc">生产 1500米 | 前面罩缓冲块 | 张三</div></div></div>`,
+`<div class="tli"><div class="tld" style="background:var(--orange)"></div><div class="tl-info"><div class="d">2026-02-15</div><div class="desc">清洁模腔、涂抹脱模剂 | 王五</div></div></div><div class="tli"><div class="tld" style="background:var(--orange)"></div><div class="tl-info"><div class="d">2025-11-10</div><div class="desc">全面检查密封面 | 王五</div></div></div>`,
+`<div class="tli"><div class="tld" style="background:var(--red)"></div><div class="tl-info"><div class="d">2026-01-20</div><div class="desc">模腔有裂纹 | 已完成 | 费用¥1,200</div></div></div>`,
+`<div class="tli"><div class="tld" style="background:var(--yellow)"></div><div class="tl-info"><div class="d">2025-12-01</div><div class="desc">调整周期: 20万米→25万米 | XX检测机构</div></div></div>`,
+`<div style="padding:24px;text-align:center;color:var(--t3);font-size:14px">暂无照片记录</div>`
+];
+function swDT(el,i){document.querySelectorAll('.dti').forEach(t=>t.classList.remove('on'));if(el)el.classList.add('on');else document.querySelector('.dti').classList.add('on');document.getElementById('dTC').innerHTML=TC[i]||''}
+function swSeg(el,i){document.querySelectorAll('.sgi').forEach(s=>s.classList.remove('on'));el.classList.add('on');document.getElementById('bF').style.display=i===0?'block':'none';document.getElementById('rF').style.display=i===1?'block':'none'}
+
+function drawPie(){
+  const cv=document.getElementById('pieChart');if(!cv)return;const ctx=cv.getContext('2d');
+  const data=[{v:38,c:'#1677FF'},{v:28,c:'#52C41A'},{v:13,c:'#FA8C16'},{v:12,c:'#F5222D'},{v:5,c:'#8C8C8C'}];
+  const total=data.reduce((s,d)=>s+d.v,0);
+  let start=-Math.PI/2;const cx=160,cy=80,r=60;
+  data.forEach(d=>{const angle=d.v/total*Math.PI*2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,start,start+angle);ctx.closePath();ctx.fillStyle=d.c;ctx.fill();start+=angle});
+}
+</script>
+</body>
+</html>

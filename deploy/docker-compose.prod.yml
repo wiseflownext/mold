@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+    container_name: mold-server
+    restart: always
+    env_file: ../.env.prod
+    ports:
+      - "3000:3000"
+    depends_on:
+      - redis
+
+  web:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    container_name: mold-web
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+
+  redis:
+    image: redis:7-alpine
+    container_name: mold-redis
+    restart: always
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
