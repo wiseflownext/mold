@@ -21,7 +21,8 @@ export default function Login() {
       const isWorker = res.user.appMode === 'worker' || res.user.roleCode === 'worker';
       router.replace(isWorker ? '/(tabs)' : '/(manager-tabs)');
     } catch (e: any) {
-      Alert.alert('登录失败', e.response?.data?.message || '网络错误');
+      const msg = e.response?.data?.message || e.message || '网络错误';
+      Alert.alert('登录失败', `${msg}\n${e.config?.baseURL || ''}`);
     } finally {
       setLoading(false);
     }
