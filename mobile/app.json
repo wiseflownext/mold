@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "模具管家",
+    "slug": "mold-keeper",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "mold-keeper",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1677FF"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.moldkeeper.app"
+    },
+    "android": {
+      "package": "com.moldkeeper.app",
+      "usesCleartextTraffic": true,
+      "adaptiveIcon": {
+        "backgroundColor": "#1677FF",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "511c6288-b22e-4b55-884d-657014ca33e2"
+      }
+    },
+    "owner": "wiseflownext"
+  }
+}

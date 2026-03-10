@@ -8,3 +8,14 @@ server/prisma/generated/
 敏感信息.txt
 deploy/push_env.py
 deploy/remote_exec.py
+deploy/gen_apk_url.py
+deploy/set_apk_public.py
+deploy/upload_apk.py
+deploy/upload_apk_zip.py
+deploy/upload_apk_ecs.py
+deploy/download_keystore.py
+deploy/import_mold_data.py
+deploy/list_users.py
+deploy/show_tables.py
+deploy/check_db.py
+*.apk
