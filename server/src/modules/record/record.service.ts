@@ -87,7 +87,7 @@ export class RecordService {
 
   async createMaintenance(userId: number, data: any) {
     const record = await this.prisma.maintenanceRecord.create({
-      data: { moldId: +data.moldId, date: new Date(data.date || new Date()), content: data.content, userId, cost: data.cost ? +data.cost : null, remark: data.remark },
+      data: { moldId: +data.moldId, date: new Date(data.date || new Date()), content: data.content, userId, remark: data.remark },
     });
     if (data.nextDate) {
       await this.prisma.mold.update({ where: { id: +data.moldId }, data: { nextMaintenanceDate: new Date(data.nextDate) } });

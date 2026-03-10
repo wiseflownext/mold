@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import * as bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -66,7 +66,6 @@ export class UserService {
     const monthRepair = await this.prisma.repairOrder.count({ where: { createdAt: { gte: monthStart } } });
     const monthMaint = await this.prisma.maintenanceRecord.count({ where: { createdAt: { gte: monthStart } } });
     const repairCost = await this.prisma.repairOrder.aggregate({ where: { createdAt: { gte: monthStart } }, _sum: { cost: true } });
-    const maintCost = await this.prisma.maintenanceRecord.aggregate({ where: { createdAt: { gte: monthStart } }, _sum: { cost: true } });
-    return { moldTotal, byStatus, byType, monthUsage, monthRepair, monthMaint, repairCost: repairCost._sum.cost || 0, maintCost: maintCost._sum.cost || 0 };
+    return { moldTotal, byStatus, byType, monthUsage, monthRepair, monthMaint, repairCost: repairCost._sum.cost || 0 };
   }
 }
