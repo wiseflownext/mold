@@ -15,8 +15,8 @@ async function main() {
   if (managerRole) {
     const exists = await prisma.user.findUnique({ where: { username: 'manager1' } });
     if (!exists) {
-      const bcrypt = require('bcrypt');
-      const pwd = await bcrypt.hash('123456', 10);
+      const bcryptMod = await import('bcrypt');
+      const pwd = await bcryptMod.default.hash('123456', 10);
       await prisma.user.create({ data: { username: 'manager1', password: pwd, name: '李经理', roleId: managerRole.id, status: 1 } });
     }
   }
